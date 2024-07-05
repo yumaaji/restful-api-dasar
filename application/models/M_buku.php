@@ -37,4 +37,9 @@ class M_buku extends CI_Model{
     $this->db->delete($this->_tbl_buku, ['id' => $id]); //delete data based on ID choosen
     return $this->db->affected_rows();
   }
+
+  public function importBuku($data){
+    $this->db->insert_batch($this->_tbl_buku, $data);
+    return $this->db->affected_rows();
+  }
 }

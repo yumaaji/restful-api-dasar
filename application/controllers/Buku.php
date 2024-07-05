@@ -1,6 +1,8 @@
 <?php
 
 use chriskacerguis\RestServer\RestController;
+use \PhpOffice\PhpSpreadsheet\Reader\Xls;
+use \PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 class Buku extends RestController{
 
@@ -184,6 +186,72 @@ class Buku extends RestController{
           'message' => 'Gagal menghapus data'
         ], self::HTTP_BAD_REQUEST);
       }
+    }
+  }
+
+  public function import_post(){
+    $dataImport = $_FILES["file_import"]; //get file information
+    $fileName = $dataImport['name']; //get file name
+
+    if(isset($fileName)){ //if file not empty
+      $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION); //get file extension
+      if($fileExtension == "xls"){
+        $reader = new Xls(); //spreedsheet library
+      }else{
+        $reader = new Xlsx();//spreedsheet library
+      }
+
+      $path = $dataImport['tmp_name']; //get file path
+      $spreadsheet = $reader->load($path); //execute file with spreadsheet library
+      $sheet = $spreadsheet->getActiveSheet()->toArray(); //get data in array
+      $data = [];
+
+      foreach($sheet as $key => $value){
+        var_dump($value);
+        if($key == 0) continue;
+        $judul = $value[1];
+        $penulis = $value[2];
+        $tahun = $value[3];
+        $penerbit = $value[4];
+        $stock = $value[5];
+        $hargaBeli = $value[6];
+        $hargaJual = $value[7];
+        $kategori = $value[8];
+
+        if($judul != '' && $penulis != '' && $penerbit != '' && $tahun != '' && $stock != '' && $hargaBeli != '' && $hargaJual != '' && $kategori != ''){
+          $data[] = [
+            'judul' => $judul,
+            'penulis' => $penulis,
+            'tahun' => $tahun,
+            'penerbit' => $penerbit,
+            'stock' => $stock,
+            'harga_beli' => $hargaBeli,
+            'harga_jual' => $hargaJual,
+            'kategori_id' => $kategori
+          ];
+        }
+      }
+
+
+      $import = $this->buku->importBuku($data);
+      if($import > 0){
+        $this->response([
+          'status' => true,
+          'message' => 'Berhasil mengimport data'
+        ], self::HTTP_CREATED);
+      }
+      else{
+        $this->response([
+          'status' => false,
+          'message' => 'Gagal mengimport data'
+        ], self::HTTP_BAD_REQUEST);
+      }
+    }
+    else{
+      $this->response([
+        'status' => false,
+        'message' => 'Tidak ada file yang diupload'
+      ], self::HTTP_NOT_FOUND);
     }
   }
 
