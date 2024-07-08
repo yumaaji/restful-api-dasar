@@ -1,13 +1,14 @@
 <?php
 
-use chriskacerguis\RestServer\RestController;
+require_once APPPATH . 'controllers/Auth.php';
 use \PhpOffice\PhpSpreadsheet\Reader\Xls;
 use \PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
-class Buku extends RestController{
+class Buku extends Auth{
 
   function __construct(){
     parent::__construct();
+    $this->cekToken();
     $this->load->model('M_buku','buku');
   }
 
